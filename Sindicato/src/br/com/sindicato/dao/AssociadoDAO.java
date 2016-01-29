@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import br.com.sindicato.domain.Associado;
 import br.com.sindicato.factory.ConexaoFactory;
@@ -84,7 +85,99 @@ public class AssociadoDAO {
 		return retorno;
 	}
 	
-	//Testar Busca por CNPJ
+	public ArrayList<Associado> listar() throws SQLException{
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT codigoTblAssociado, cnpjTblAssociado, razaoTblAssociado, ativoTblAssociado ");
+		sql.append("FROM associado ");
+		sql.append("ORDER BY razaoTblAssociado ASC");
+		
+		Connection conexao = ConexaoFactory.conectar();
+		
+		PreparedStatement comando = conexao.prepareStatement(sql.toString());
+		
+		ResultSet resultado = comando.executeQuery();
+		
+		ArrayList<Associado> lista = new ArrayList<Associado>();
+		
+		while(resultado.next()){
+			Associado a = new Associado();
+			a.setCodigo(resultado.getLong("codigoTblAssociado"));
+			a.setCnpj(resultado.getString("cnpjTblAssociado"));
+			a.setRazaoSocial(resultado.getString("razaoTblAssociado"));
+			a.setAtivo(resultado.getString("ativoTblAssociado"));
+			
+			lista.add(a);
+		}
+		
+		return lista;
+	}
+	
+	public ArrayList<Associado> buscarPorRazao(Associado a) throws SQLException{
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT codigoTblAssociado, cnpjTblAssociado, razaoTblAssociado, ativoTblAssociado ");
+		sql.append("FROM associado ");
+		sql.append("WHERE razaoTblAssociado LIKE ? ");
+		sql.append("ORDER BY razaoTblAssociado ASC");
+		
+		Connection conexao = ConexaoFactory.conectar();
+		
+		PreparedStatement comando = conexao.prepareStatement(sql.toString());
+		
+		comando.setString(1, "%" + a.getRazaoSocial() + "%");
+		
+		ResultSet resultado = comando.executeQuery();
+		
+		ArrayList<Associado> lista = new ArrayList<Associado>();
+		
+		while (resultado.next()){
+			Associado item = new Associado();
+			item.setCodigo(resultado.getLong("codigoTblAssociado"));
+			item.setCnpj(resultado.getString("cnpjTblAssociado"));
+			item.setRazaoSocial(resultado.getString("razaoTblAssociado"));
+			item.setAtivo(resultado.getString("ativoTblAssociado"));
+			
+			lista.add(item);
+		}
+		
+		return lista;
+	}
+	
+	//Teste buscar por razão
+	public static void main(String[] args){
+		Associado a1 = new Associado();
+		a1.setRazaoSocial("Ins");
+		AssociadoDAO adao = new AssociadoDAO();
+		
+		try{
+			ArrayList<Associado> lista = adao.buscarPorRazao(a1);
+			for(Associado item : lista){
+				System.out.println(item);
+			}
+		}catch(SQLException ex){
+			System.out.println("Ocorreu um erro durante a pesquisa");
+			ex.printStackTrace();
+			
+		}
+	}
+	
+	/* Testar listar
+	public static void main(String[] args){
+		AssociadoDAO adao = new AssociadoDAO();
+		try{
+			ArrayList<Associado> lista = adao.listar();
+			for(Associado a : lista){
+				System.out.println(a);
+			}
+		}catch(SQLException ex){
+			System.out.println("Ocorreu um erro durante a listagem");
+			ex.printStackTrace();
+			
+		}
+			
+	}*/
+	
+	
+	/*Testar Busca por CNPJ
 	public static void main(String[] args){
 		Associado a1 = new Associado();
 		a1.setCnpj("04.835.601/0001-70");
@@ -98,9 +191,8 @@ public class AssociadoDAO {
 			System.out.println("Erro na consulta!");
 			ex.printStackTrace();
 			
-		}
+		}*/
 		
-	}
 	
 	/*Teste Editar
 	public static void main(String[] args){
@@ -163,9 +255,6 @@ public class AssociadoDAO {
 			System.out.println("Erro! Não foi possivel salvar!");
 			ex.printStackTrace();
 			
-		}
-	} */
+		}*/
+	} 
 	
-	
-
-}
